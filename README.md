@@ -4,6 +4,7 @@
 -------------------------------------------------------------------------------------------------------------
 
 **Hardware components**
+
 1. Raspberry pi 3
 2. L2938N (motor driver)
 3. webcame
@@ -13,8 +14,8 @@
 
 --------------------------------||||||||||||||||||||||||||--------------------------------------------------------
 
+**self driving car function**
 
-**self driving car function **
 1. lane detection (white lane)
 2. traffic light detection (Red, Green)
 3. stop sign detection 
