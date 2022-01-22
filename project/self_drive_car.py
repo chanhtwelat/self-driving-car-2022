@@ -13,14 +13,79 @@ overlayList = []
 for imPath in myList:
     image = cv2.imread(f'{folderPath}/{imPath}')
     overlayList.append(image)
-
+    
+# Define state value
 state = {"state": 1}
 
-ArduinoSerial = serial.Serial("COM13", baudrate=9600)
-time.sleep(2)
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+# define motor pins
+IN1 = 4  #GPIO Pin GPIO 4 /7
+IN2 = 17 #GPIO Pin GPIO 17/ 11
+IN3 = 27 #GPIO Pin GPIO 27/ 13
+IN4 = 22 #GPIO Pin GPIO 22/ 15
+En1 = 23 #GPIO Pin GPIO 23/ 16
+En2 = 24 #GPIO Pin GPIO 24/ 18
 
-print(ArduinoSerial.readline())
-print("Ready to Control")
+# Set up output
+GPIO.setup(IN1, GPIO.OUT)
+GPIO.setup(IN2, GPIO.OUT)
+GPIO.setup(IN3, GPIO.OUT)
+GPIO.setup(IN4, GPIO.OUT)
+GPIO.setup(En1, GPIO.OUT)
+GPIO.setup(En2, GPIO.OUT)
+
+# Set up pwn
+R_PWM = GPIO.PWM(En1, 100)
+L_PWM = GPIO.PWM(En2, 100)
+R_PWM.start(0)
+L_PWM.start(0)
+
+def move_forward(): # robot move forward
+    GPIO.output(IN1, 1)
+    GPIO.output(IN2, 0)
+    GPIO.output(IN3, 1)
+    GPIO.output(IN4, 0)
+    R_PWM.ChangeDutyCycle(30)
+    L_PWM.ChangeDutyCycle(30)
+    print('move forward')
+
+def move_back():    # robot move back
+    #time.sleep(10)
+    GPIO.output(IN1, 0)
+    GPIO.output(IN2, 1)
+    GPIO.output(IN3, 0)
+    GPIO.output(IN4, 1)
+    R_PWM.ChangeDutyCycle(30)
+    L_PWM.ChangeDutyCycle(25)
+    print('move back')
+
+def move_right():  # robot move right
+    GPIO.output(IN1, 1)
+    GPIO.output(IN2, 0)
+    GPIO.output(IN3, 0)
+    GPIO.output(IN4, 0)
+    R_PWM.ChangeDutyCycle(20)
+    L_PWM.ChangeDutyCycle(20)
+    print('turn right')
+
+def move_left():   # robot move left
+    GPIO.output(IN1, 0)
+    GPIO.output(IN2, 0)
+    GPIO.output(IN3, 1)
+    GPIO.output(IN4, 0)
+    R_PWM.ChangeDutyCycle(20)
+    L_PWM.ChangeDutyCycle(20)
+    print('turn left')
+
+def stop(): # robot stop
+    GPIO.output(IN1, 0)
+    GPIO.output(IN2, 0)
+    GPIO.output(IN3, 0)
+    GPIO.output(IN4, 0)
+    R_PWM.ChangeDutyCycle(0)
+    L_PWM.ChangeDutyCycle(0)
+    print('Stop')
 
 def stopSign():
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -30,7 +95,7 @@ def stopSign():
         cv2.putText(img, 'STOP', (x + 6, y - 6), cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 0), 2)
         state.update({"state": 0})
         img[0:100, 0:100] = overlayList[3]
-        ArduinoSerial.write(b'S')
+        stop() #calling stop function
         print("Stop Sign Detect")
 
 def trafficSign():
@@ -80,7 +145,7 @@ def trafficSign():
                     cv2.putText(img, 'RED', (i[0], i[1]), font, 1, (0, 0, 255), 2, cv2.LINE_AA)
                     state.update({"state": 0})
                     img[0:100, 0:100] = overlayList[3]
-                    ArduinoSerial.write(b'S')
+                    stop() #calling stop function
                     print("Red light detect")
 
         if g_circles is not None:
@@ -122,17 +187,17 @@ def laneDetect():
             if cx >= 360:
                 print("Turn Right")
                 img[0:100, 0:100] = overlayList[2]
-                ArduinoSerial.write(b'R')
+                move_right() #calling turn right function
 
             if cx < 360 and cx > 240:
                 print("On Track")
                 img[0:100, 0:100] = overlayList[0]
-                ArduinoSerial.write(b'F')
+                move_forward() #calling move forward function
 
             if cx <= 240:
                 print("Turn Left")
                 img[0:100, 0:100] = overlayList[1]
-                ArduinoSerial.write(b'L')
+                move_left() #calling turn left function
 
             cv2.circle(img, (cx, cy), 5, (0, 0, 255), -1)
         cv2.drawContours(img, c, -1, (0, 255, 0), 1)
