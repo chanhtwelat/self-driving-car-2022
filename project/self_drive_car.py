@@ -57,7 +57,7 @@ def move_back():    # robot move back
     GPIO.output(IN3, 0)
     GPIO.output(IN4, 1)
     R_PWM.ChangeDutyCycle(30)
-    L_PWM.ChangeDutyCycle(25)
+    L_PWM.ChangeDutyCycle(30)
     print('move back')
 
 def move_right():  # robot move right
